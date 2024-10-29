@@ -1,0 +1,30 @@
+galaxy_info:
+  author: moncada
+  description: Users and Group management in ansible.
+  company: Socket Sistemas Informáticos Alternativos
+
+  issue_tracker_url: https://github.com/socket-es/users_management/issues
+
+  license: license (BSD, MIT)
+  min_ansible_version: "2.4"
+  platforms:
+    - name: GenericLinux
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: OracleLinux
+      versions:
+        - all
+
+  galaxy_tags:
+    - system
+    - users
+    - groups
+    - ssh_keys
+    - sudoers
+dependencies: []
