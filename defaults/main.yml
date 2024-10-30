@@ -1,6 +1,8 @@
 ---
 # List of groups to create
-groups_list: []
+groups_list: {}
 
 # List of users to create
-users_list: []
+users_list: {}
+
+inventory_not_correct: false

@@ -1,46 +1,76 @@
 ---
+# Check if any item.value.inventory in users_list is not in the general inventory of hosts
+- name: Check if all inventories in users_list are in the general inventory of hosts
+  ansible.builtin.assert:
+    that:
+      - "users_list | dict2items | selectattr('value.inventory', 'defined') | map(attribute='value.inventory') | join(',') | regex_findall('([^,]+)') | unique | difference(groups.keys()) | length == 0"
+    fail_msg: "One or more inventories in users_list are not present in the general inventory of hosts."
+
+# Ensure inventory exists in users_list
+- name: Ensure inventory exists in users_list for this host
+  ansible.builtin.set_fact:
+    inventory_exists: "{{ group_names | intersect(users_list | dict2items | selectattr('value.inventory', 'defined') | map(attribute='value.inventory') | join(',') | regex_findall('([^,]+)') | unique) | length > 0 }}"
+
+# Set a temporary value if inventory does not exist
+- name: Set temporary value if inventory does not exist
+  ansible.builtin.set_fact:
+    inventory_not_correct: true
+  when: not inventory_exists
+
 # Create groups
-- name: Create group {{ item.name }}
+- name: Create group {{ item.key }}
   ansible.builtin.group:
     name: "{{ item.value.name }}"
     state: "{{ item.value.state | default('present') }}"
   loop: "{{ lookup('dict', groups_list, wantlist=True) }}"
-  when: groups_list | length > 0
+  when:
+    - groups_list | default({}) | length > 0
+    - inventory_exists
+    - inventory_not_correct == false
 
 # Ensure groups exist before creating users
 - name: Ensure groups exist
   ansible.builtin.assert:
     that:
-      - "'{{ item.value.groups }}' in groups_list | map(attribute='name') | list"
+      - item.value.groups in groups_list | dict2items | map(attribute='value.name') | list
     fail_msg: "Group '{{ item.value.groups }}' does not exist. Please create the group first."
-  loop: "{{ users_list }}"
-  when: users_list | length > 0
+  loop: "{{ lookup('dict', users_list, wantlist=True) }}"
+  when:
+    - users_list | default({}) | length > 0
+    - inventory_exists
+    - inventory_not_correct == false
 
 # Create users
 - name: Create User {{ item.key }}
   user:
-    name: "{{ item.value.key }}"
+    name: "{{ item.value.user }}"
     password: "{{ item.value.password }}"
     groups: "{{ item.value.groups}}"
     shell: "{{ item.value.shell }}"
     system: no
     createhome: "{{ item.value.createhome | default('true') }}"
     comment: "{{ item.value.comment }}"
-    home: "{{ item.value.home | default('/home/{{ item.key }}') }}"
+    home: "{{ item.value.home | default('/home/{{ item.value.user }}') }}"
     force: yes
     remove: yes
     state: "{{ item.value.state | default('present') }}"
   loop: "{{ lookup('dict', users_list, wantlist=True) }}"
-  when: users_list | length > 0 and item.value.inventory.split(',') | map('trim') | intersect(group_names) | length > 0
+  when:
+    - users_list | default({}) | length > 0
+    - inventory_exists
+    - inventory_not_correct == false
 
 # Set authorized key for console access to users
 - name: Set authorized key for console access to {{ item.key }}
   ansible.posix.authorized_key:
     user: "{{ item.value.user }}"
-    comment: "{{ item.value.comment }}"
-    key: "{{ lookup('file', '{{ item.value.ssh_key_file }}') }}"
+    comment: "{{ item.value.comment | replace(' ', '') }}"
+    key: "{{ item.value.ssh_key }}"
     key_options: "{{ item.value.ssh_key_options }}"
     path: "/home/{{ item.value.user }}/.ssh/authorized_keys"
     state: "{{ item.value.state | default('present') }}"
   loop: "{{ lookup('dict', users_list, wantlist=True) }}"
-  when: users_list | length > 0
+  when:
+    - users_list | default({}) | length > 0
+    - inventory_exists
+    - inventory_not_correct == false
