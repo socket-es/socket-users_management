@@ -1,4 +1,6 @@
 galaxy_info:
+  role_name: users_management
+  namespace: socket_es
   author: moncada
   description: Users and Group management in ansible.
   company: Socket Sistemas Informáticos Alternativos
