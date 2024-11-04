@@ -60,6 +60,20 @@
     - inventory_exists
     - inventory_not_correct == false
 
+# Ensure .ssh directory exists for users
+- name: Ensure .ssh directory exists for {{ item.key }}
+  ansible.builtin.file:
+    path: "/home/{{ item.value.user }}/.ssh"
+    state: directory
+    owner: "{{ item.value.user }}"
+    group: "{{ item.value.groups }}"
+    mode: "0700"
+  loop: "{{ lookup('dict', users_list, wantlist=True) }}"
+  when:
+    - users_list | default({}) | length > 0
+    - inventory_exists
+    - inventory_not_correct == false
+
 # Set authorized key for console access to users
 - name: Set authorized key for console access to {{ item.key }}
   ansible.posix.authorized_key:

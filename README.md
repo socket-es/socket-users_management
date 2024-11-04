@@ -24,6 +24,7 @@ The configurable variables for this role include:
   - `state`: The state of the user (present or absent), default is `present`.
   - `ssh_key`: The user's public SSH key.
   - `ssh_key_options`: The options to be applied to the SSH key.
+  - `inventory`: Set inventory group hosts to apply changes.
 
 ## Dependencies
 
@@ -38,7 +39,10 @@ Here is an example of how to use this role, minimal configuration is required:
   roles:
     - role: socket_es.users_management
       group_list:
-        - name: developers
+        developers:
+          name: developers
+        admins:
+          name: admins
       users_list:
         johndoe:
           user: johndoe
