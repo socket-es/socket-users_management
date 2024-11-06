@@ -12,11 +12,15 @@ If the variables are empty, or if the inventory group_names is not found, this r
 
 The configurable variables for this role include:
 
-- `group_list`: A list of dictionaries defining the groups to be created. Each dictionary should have the `name` key and optionally the `state` key default present.
+- `group_list`: A list of dictionaries defining the groups to be created. Each dictionary should have the following keys:
+  - `name`: Name of the group on system.
+  - `state`: The state of the group (present or absent), default is `present`.
+  - `sudo`: Allow sudo to group on system with full permissions, default is `false`.
 - `users_list`: A list of dictionaries defining the users to be created. Each dictionary should have the following keys:
   - `user`: The username.
   - `password`: The hashed user's password.
-  - `groups`: The groups the user belongs to.
+  - `groups`: The groups the user belongs to. And the principal group for home folder is the first group in the groups list.
+  - `chmod`: Set custom chmod for user home, default is `700`.
   - `shell`: The user's shell.
   - `createhome`: Whether to create the home directory, default is `true`.
   - `comment`: A comment about the user.
@@ -41,6 +45,7 @@ Here is an example of how to use this role, minimal configuration is required:
       group_list:
         developers:
           name: developers
+          sudo: true
         admins:
           name: admins
       users_list:
@@ -62,3 +67,4 @@ BSD, MIT
 ## Author Information
 
 This role was created in 2024 by [Juan Carlos Giménez Moncada](https://www.opensocket.es/).
+

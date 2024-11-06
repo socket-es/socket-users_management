@@ -1,0 +1,35 @@
+---
+
+# Create groups
+- name: Create groups
+  ansible.builtin.group:
+    name: "{{ item.value.name }}"
+    state: "{{ item.value.state | default('present') }}"
+  loop: "{{ lookup('dict', groups_list, wantlist=True) }}"
+  when:
+    - groups_list | default({}) | length > 0
+
+- name: Ensure package sudo installed
+  ansible.builtin.package:
+    name: sudo
+    state: present
+  when:
+    - groups_list | default({}) | length > 0
+    - ansible_facts.packages['sudo'] is not defined
+
+- name: Get the visudo path
+  ansible.builtin.command: which visudo
+  register: visudo_path
+  changed_when: false
+  when:
+    - groups_list | default({}) | length > 0
+
+- name: Allow groups to use sudo
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    line: "%{{ item.value.name }} ALL=(ALL) ALL"
+    validate: "{{ visudo_path.stdout }} -cf %s"
+    state: "{{ 'present' if (item.value.sudo is defined and item.value.sudo) else 'absent' }}"
+  loop: "{{ lookup('dict', groups_list, wantlist=True) }}"
+  when:
+    - groups_list | default({}) | length > 0

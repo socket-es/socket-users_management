@@ -6,3 +6,5 @@ groups_list: {}
 users_list: {}
 
 inventory_not_correct: false
+
+default_chmod: 700

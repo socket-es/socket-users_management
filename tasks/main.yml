@@ -1,4 +1,5 @@
 ---
+
 # Check if any item.value.inventory in users_list is not in the general inventory of hosts
 - name: Check if all inventories in users_list are in the general inventory of hosts
   ansible.builtin.assert:
@@ -18,73 +19,19 @@
   when: not inventory_exists
 
 # Create groups
-- name: Create group {{ item.key }}
-  ansible.builtin.group:
-    name: "{{ item.value.name }}"
-    state: "{{ item.value.state | default('present') }}"
-  loop: "{{ lookup('dict', groups_list, wantlist=True) }}"
+- include_tasks: groups.yml
   when:
-    - groups_list | default({}) | length > 0
-    - inventory_exists
-    - inventory_not_correct == false
-
-# Ensure groups exist before creating users
-- name: Ensure groups exist
-  ansible.builtin.assert:
-    that:
-      - item.value.groups in groups_list | dict2items | map(attribute='value.name') | list
-    fail_msg: "Group '{{ item.value.groups }}' does not exist. Please create the group first."
-  loop: "{{ lookup('dict', users_list, wantlist=True) }}"
-  when:
-    - users_list | default({}) | length > 0
     - inventory_exists
     - inventory_not_correct == false
 
 # Create users
-- name: Create User {{ item.key }}
-  user:
-    name: "{{ item.value.user }}"
-    password: "{{ item.value.password }}"
-    groups: "{{ item.value.groups}}"
-    shell: "{{ item.value.shell }}"
-    system: no
-    createhome: "{{ item.value.createhome | default('true') }}"
-    comment: "{{ item.value.comment }}"
-    home: "{{ item.value.home | default('/home/{{ item.value.user }}') }}"
-    force: yes
-    remove: yes
-    state: "{{ item.value.state | default('present') }}"
-  loop: "{{ lookup('dict', users_list, wantlist=True) }}"
+- include_tasks: users.yml
   when:
-    - users_list | default({}) | length > 0
     - inventory_exists
     - inventory_not_correct == false
 
-# Ensure .ssh directory exists for users
-- name: Ensure .ssh directory exists for {{ item.key }}
-  ansible.builtin.file:
-    path: "/home/{{ item.value.user }}/.ssh"
-    state: directory
-    owner: "{{ item.value.user }}"
-    group: "{{ item.value.groups }}"
-    mode: "0700"
-  loop: "{{ lookup('dict', users_list, wantlist=True) }}"
+# SSH access management
+- include_tasks: ssh.yml
   when:
-    - users_list | default({}) | length > 0
-    - inventory_exists
-    - inventory_not_correct == false
-
-# Set authorized key for console access to users
-- name: Set authorized key for console access to {{ item.key }}
-  ansible.posix.authorized_key:
-    user: "{{ item.value.user }}"
-    comment: "{{ item.value.comment | replace(' ', '') }}"
-    key: "{{ item.value.ssh_key }}"
-    key_options: "{{ item.value.ssh_key_options }}"
-    path: "/home/{{ item.value.user }}/.ssh/authorized_keys"
-    state: "{{ item.value.state | default('present') }}"
-  loop: "{{ lookup('dict', users_list, wantlist=True) }}"
-  when:
-    - users_list | default({}) | length > 0
     - inventory_exists
     - inventory_not_correct == false

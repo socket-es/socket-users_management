@@ -1,0 +1,30 @@
+---
+
+# Create users
+- name: Create or Manage Users
+  user:
+    name: "{{ item.value.user }}"
+    password: "{{ item.value.password }}"
+    group: "{{ item.value.groups | first }}"
+    groups: "{{ item.value.groups}}"
+    shell: "{{ item.value.shell }}"
+    system: no
+    createhome: "{{ item.value.createhome | default('true') }}"
+    comment: "{{ item.value.comment }}"
+    home: "{{ item.value.home | default('/home/' + item.value.user) }}"
+    force: yes
+    remove: yes
+    state: "{{ item.value.state | default('present') }}"
+  loop: "{{ lookup('dict', users_list, wantlist=True) }}"
+  when:
+    - users_list | default({}) | length > 0
+
+# Ensure home directory are correct chmod
+- name: Ensure home directory are correct chmod
+  ansible.builtin.file:
+    path: "/home/{{ item.value.user }}"
+    state: directory
+    mode: "{{ item.value.chmod | default (default_chmod) }}"
+  loop: "{{ lookup('dict', users_list, wantlist=True) }}"
+  when:
+    - users_list | default({}) | length > 0
