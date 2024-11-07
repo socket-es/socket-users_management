@@ -12,8 +12,8 @@
     createhome: "{{ item.value.createhome | default('true') }}"
     comment: "{{ item.value.comment }}"
     home: "{{ item.value.home | default('/home/' + item.value.user) }}"
-    force: yes
-    remove: yes
+    force: true
+    remove: true
     state: "{{ item.value.state | default('present') }}"
   loop: "{{ lookup('dict', users_list, wantlist=True) }}"
   when:
@@ -28,3 +28,4 @@
   loop: "{{ lookup('dict', users_list, wantlist=True) }}"
   when:
     - users_list | default({}) | length > 0
+    - item.value.state | default('present') != 'absent'

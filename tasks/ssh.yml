@@ -11,6 +11,7 @@
   loop: "{{ lookup('dict', users_list, wantlist=True) }}"
   when:
     - users_list | default({}) | length > 0
+    - item.value.state | default('present') != 'absent'
 
 # Set authorized key for console access to users
 - name: Set authorized key for console access to user
@@ -24,3 +25,4 @@
   loop: "{{ lookup('dict', users_list, wantlist=True) }}"
   when:
     - users_list | default({}) | length > 0
+    - item.value.state | default('present') != 'absent'
