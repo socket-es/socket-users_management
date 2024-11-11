@@ -12,6 +12,7 @@
   when:
     - users_list | default({}) | length > 0
     - item.value.state | default('present') != 'absent'
+    - item.value.ssh_key is defined and item.value.ssh_key | length > 0
 
 # Set authorized key for console access to users
 - name: Set authorized key for console access to user
@@ -19,10 +20,12 @@
     user: "{{ item.value.user }}"
     comment: "{{ item.value.comment | replace(' ', '') }}"
     key: "{{ item.value.ssh_key }}"
-    key_options: "{{ item.value.ssh_key_options }}"
+    key_options: "{{ item.value.ssh_key_options | default(omit) }}"
     path: "/home/{{ item.value.user }}/.ssh/authorized_keys"
     state: "{{ item.value.state | default('present') }}"
   loop: "{{ lookup('dict', users_list, wantlist=True) }}"
   when:
     - users_list | default({}) | length > 0
     - item.value.state | default('present') != 'absent'
+    - item.value.ssh_key is defined and item.value.ssh_key | length > 0
+
