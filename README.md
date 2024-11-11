@@ -19,6 +19,8 @@ The configurable variables for this role include:
 - `users_list`: A list of dictionaries defining the users to be created. Each dictionary should have the following keys:
   - `user`: The username.
   - `password`: The hashed user's password.
+  - `uid`: Optionally sets the UID of the user.
+  - `expires`: An expiry time for the user in epoch (example 1422403387).
   - `groups`: The groups the user belongs to. And the principal group for home folder is the first group in the groups list.
   - `chmod`: Set custom chmod for user home, default is `700`.
   - `shell`: The user's shell.
@@ -26,8 +28,8 @@ The configurable variables for this role include:
   - `comment`: A comment about the user.
   - `home`: The user's home directory, default is `/home/user`.
   - `state`: The state of the user (present or absent), default is `present`.
-  - `ssh_key`: The user's public SSH key.
-  - `ssh_key_options`: The options to be applied to the SSH key.
+  - `ssh_key`: The user's public SSH key, this is optional.
+  - `ssh_key_options`: The options to be applied to the SSH key, this is optional.
   - `inventory`: Set inventory group hosts to apply changes.
 
 ## Dependencies
@@ -56,7 +58,6 @@ Here is an example of how to use this role, minimal configuration is required:
           shell: /bin/bash
           comment: "John Doe"
           ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAr..."
-          ssh_key_options: 'no-port-forwarding,from="1.1.1.1"'
           inventory: test_servers
 ```
 
