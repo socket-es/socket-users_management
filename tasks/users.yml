@@ -5,6 +5,8 @@
   user:
     name: "{{ item.value.user }}"
     password: "{{ item.value.password }}"
+    expires: "{{ item.value.expires | default(omit) }}"
+    uid: "{{ item.value.uid | default(omit) }}"
     group: "{{ item.value.groups | first }}"
     groups: "{{ item.value.groups}}"
     shell: "{{ item.value.shell }}"
@@ -29,3 +31,4 @@
   when:
     - users_list | default({}) | length > 0
     - item.value.state | default('present') != 'absent'
+
