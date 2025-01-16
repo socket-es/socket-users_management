@@ -30,7 +30,7 @@ The configurable variables for this role include:
   - `state`: The state of the user (present or absent), default is `present`.
   - `ssh_key`: The user's public SSH key, this is optional.
   - `ssh_key_options`: The options to be applied to the SSH key, this is optional.
-  - `inventory`: Set inventory group hosts to apply changes.
+  - `inventory`: Set inventory group hosts to apply changes, if "all" apply to global inventory.
 
 ## Dependencies
 

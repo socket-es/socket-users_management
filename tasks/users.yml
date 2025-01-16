@@ -20,6 +20,7 @@
   loop: "{{ lookup('dict', users_list, wantlist=True) }}"
   when:
     - users_list | default({}) | length > 0
+    - item.value.inventory == 'all' or item.value.inventory in group_names
 
 # Ensure home directory are correct chmod
 - name: Ensure home directory are correct chmod
@@ -31,4 +32,5 @@
   when:
     - users_list | default({}) | length > 0
     - item.value.state | default('present') != 'absent'
+    - item.value.inventory == 'all' or item.value.inventory in group_names
 
