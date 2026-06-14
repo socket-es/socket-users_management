@@ -12,10 +12,11 @@ If the variables are empty, or if the inventory group_names is not found, this r
 
 The configurable variables for this role include:
 
-- `group_list`: A list of dictionaries defining the groups to be created. Each dictionary should have the following keys:
+- `groups_list`: A list of dictionaries defining the groups to be created. Each dictionary should have the following keys:
   - `name`: Name of the group on system.
   - `state`: The state of the group (present or absent), default is `present`.
   - `sudo`: Allow sudo to group on system with full permissions, default is `false`.
+  - `inventory`: Set inventory group hosts to apply changes. Defaults to "all". Multiple inventories can be comma-separated.
 - `users_list`: A list of dictionaries defining the users to be created. Each dictionary should have the following keys:
   - `user`: The username.
   - `password`: The hashed user's password.
@@ -30,7 +31,7 @@ The configurable variables for this role include:
   - `state`: The state of the user (present or absent), default is `present`.
   - `ssh_key`: The user's public SSH key, this is optional.
   - `ssh_key_options`: The options to be applied to the SSH key, this is optional.
-  - `inventory`: Set inventory group hosts to apply changes, if "all" apply to global inventory.
+  - `inventory`: Set inventory group hosts to apply changes. Defaults to "all". Multiple inventories can be separated by commas (e.g., "web,db"). Note: If a host does not belong to the specified inventory, the user and their home directory will be aggressively removed from the system (Zero-Trust policy).
 
 ## Dependencies
 
@@ -44,10 +45,11 @@ Here is an example of how to use this role, minimal configuration is required:
 - hosts: servers
   roles:
     - role: socket_es.users_management
-      group_list:
+      groups_list:
         developers:
           name: developers
           sudo: true
+          inventory: "webservers,dbservers"
         admins:
           name: admins
       users_list:
@@ -58,7 +60,7 @@ Here is an example of how to use this role, minimal configuration is required:
           shell: /bin/bash
           comment: "John Doe"
           ssh_key: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAr..."
-          inventory: test_servers
+          inventory: "test_servers,production_servers"
 ```
 
 ## License
