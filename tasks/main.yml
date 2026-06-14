@@ -1,28 +1,32 @@
 ---
 
+# Calculate missing inventories
+- name: Identify missing inventories
+  ansible.builtin.set_fact:
+    missing_inventories: "{{ users_list | dict2items | selectattr('value.inventory', 'defined') | map(attribute='value.inventory') | join(',') | regex_findall('([^,]+)') | unique | difference(groups.keys()) | list }}"
+
 # Check if any item.value.inventory in users_list is not in the general inventory of hosts
 - name: Check if all inventories in users_list are in the general inventory of hosts
   ansible.builtin.assert:
     that:
-      - "users_list | dict2items | selectattr('value.inventory', 'defined') | map(attribute='value.inventory') | join(',') | regex_findall('([^,]+)') | unique | difference(groups.keys()) | length == 0"
-    fail_msg: "One or more inventories in users_list are not present in the general inventory of hosts."
+      - missing_inventories | length == 0
+    fail_msg: >-
+      INVENTORY ERROR! You have assigned users to inventory groups that DO NOT exist in your Ansible infrastructure.
+      Missing inventories: {{ missing_inventories | join(', ') }}.
+      Please correct the name in 'users_list' or add the group to your hosts file.
 
 # Ensure inventory exists in users_list
 - name: Ensure inventory exists in users_list for this host
   ansible.builtin.set_fact:
     inventory_exists: "{{ 'all' in (users_list | dict2items | selectattr('value.inventory', 'defined') | map(attribute='value.inventory') | list) or (group_names | intersect(users_list | dict2items | selectattr('value.inventory', 'defined') | map(attribute='value.inventory') | join(',') | regex_findall('([^,]+)') | unique) | length > 0) }}"
 
-# Set a temporary value if inventory does not exist
+# Evaluate if inventory is correct
 - name: Set temporary value if inventory does not exist
   ansible.builtin.set_fact:
-    inventory_not_correct: true
-  when: not inventory_exists
+    inventory_not_correct: "{{ not inventory_exists }}"
 
 # Create groups
 - include_tasks: groups.yml
-  when:
-    - inventory_exists
-    - inventory_not_correct == false
 
 # Create users
 - include_tasks: users.yml

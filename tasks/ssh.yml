@@ -13,7 +13,7 @@
     - users_list | default({}) | length > 0
     - item.value.state | default('present') != 'absent'
     - item.value.ssh_key is defined and item.value.ssh_key | length > 0
-    - item.value.inventory == 'all' or item.value.inventory in group_names
+    - "'all' in (item.value.inventory | default('all')).split(',') or ((item.value.inventory | default('all')).split(',') | intersect(group_names) | length > 0)"
 
 # Set authorized key for console access to users
 - name: Set authorized key for console access to user
@@ -29,5 +29,5 @@
     - users_list | default({}) | length > 0
     - item.value.state | default('present') != 'absent'
     - item.value.ssh_key is defined and item.value.ssh_key | length > 0
-    - item.value.inventory == 'all' or item.value.inventory in group_names
+    - "'all' in (item.value.inventory | default('all')).split(',') or ((item.value.inventory | default('all')).split(',') | intersect(group_names) | length > 0)"
 

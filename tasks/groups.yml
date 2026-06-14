@@ -8,6 +8,7 @@
   loop: "{{ lookup('dict', groups_list, wantlist=True) }}"
   when:
     - groups_list | default({}) | length > 0
+    - "'all' in (item.value.inventory | default('all')).split(',') or ((item.value.inventory | default('all')).split(',') | intersect(group_names) | length > 0)"
 
 - name: Ensure package sudo installed
   ansible.builtin.package:
@@ -33,3 +34,4 @@
   loop: "{{ lookup('dict', groups_list, wantlist=True) }}"
   when:
     - groups_list | default({}) | length > 0
+    - "'all' in (item.value.inventory | default('all')).split(',') or ((item.value.inventory | default('all')).split(',') | intersect(group_names) | length > 0)"

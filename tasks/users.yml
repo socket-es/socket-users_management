@@ -16,11 +16,10 @@
     home: "{{ item.value.home | default('/home/' + item.value.user) }}"
     force: true
     remove: true
-    state: "{{ item.value.state | default('present') }}"
+    state: "{{ item.value.state | default('present') if ('all' in (item.value.inventory | default('all')).split(',') or ((item.value.inventory | default('all')).split(',') | intersect(group_names) | length > 0)) else 'absent' }}"
   loop: "{{ lookup('dict', users_list, wantlist=True) }}"
   when:
     - users_list | default({}) | length > 0
-    - item.value.inventory == 'all' or item.value.inventory in group_names
 
 # Ensure home directory are correct chmod
 - name: Ensure home directory are correct chmod
@@ -32,5 +31,5 @@
   when:
     - users_list | default({}) | length > 0
     - item.value.state | default('present') != 'absent'
-    - item.value.inventory == 'all' or item.value.inventory in group_names
+    - "'all' in (item.value.inventory | default('all')).split(',') or ((item.value.inventory | default('all')).split(',') | intersect(group_names) | length > 0)"
 
