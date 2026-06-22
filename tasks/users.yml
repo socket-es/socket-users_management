@@ -26,7 +26,7 @@
   ansible.builtin.file:
     path: "/home/{{ item.value.user }}"
     state: directory
-    mode: "{{ item.value.chmod | default (default_chmod) }}"
+    mode: "{{ item.value.chmod | default(default_chmod) }}"
   loop: "{{ lookup('dict', users_list, wantlist=True) }}"
   when:
     - users_list | default({}) | length > 0
