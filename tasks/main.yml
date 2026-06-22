@@ -18,7 +18,7 @@
 # Ensure inventory exists in users_list
 - name: Ensure inventory exists in users_list for this host
   ansible.builtin.set_fact:
-    inventory_exists: "{{ 'all' in (users_list | dict2items | selectattr('value.inventory', 'defined') | map(attribute='value.inventory') | list) or (group_names | intersect(users_list | dict2items | selectattr('value.inventory', 'defined') | map(attribute='value.inventory') | join(',') | regex_findall('([^,]+)') | unique) | length > 0) }}"
+    inventory_exists: "{{ (users_list | dict2items | rejectattr('value.inventory', 'defined') | list | length > 0) or ('all' in (users_list | dict2items | selectattr('value.inventory', 'defined') | map(attribute='value.inventory') | list)) or (group_names | intersect(users_list | dict2items | selectattr('value.inventory', 'defined') | map(attribute='value.inventory') | join(',') | regex_findall('([^,]+)') | unique) | length > 0) }}"
 
 # Evaluate if inventory is correct
 - name: Set temporary value if inventory does not exist
